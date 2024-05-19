@@ -65,7 +65,7 @@
         border-radius: 20px;
       }
 
-      /* On screens that are 600px or less, set the background color to olive */
+      /* On screens that are 768px or less */
       @media screen and (max-width: 768px) {
         .data-container {
           flex-direction: column;
@@ -86,6 +86,55 @@
         }
         .data-item p{
           margin: 30px auto;
+        }
+      }
+
+      /* On screens that are 600px or less*/
+      @media screen and (max-width: 600px) {
+        .data-container{
+          width: 84%;
+        }
+        .data-item{
+          width: 50px;
+          padding: 0;
+          
+        }
+        .data-head {
+          font-size: 28px;
+        }
+        .data-item p{
+          font-size: 28px;
+          margin: 30px auto;
+        }
+        .data-item h2{
+          font-size: 18px;
+        }
+      }
+
+      /* On screens that are 300px or less*/
+      @media screen and (max-width: 300px) {
+        .data-container{
+          width: 84%;
+          justify-content: center;
+        }
+        .row{
+          margin: auto;
+          align-content: center;
+        }
+        .data-item{
+          width: 40px;
+          padding: 0;
+          
+        }
+        .data-head {
+          font-size: 20px;
+        }
+        .data-item p{
+          font-size: 20px;
+          margin: 30px auto;
+        }
+        .data-item h2{
+          font-size: 12px;
         }
       }
     </style>
