@@ -1,9 +1,35 @@
 #include <Arduino.h>
 #include <WiFi.h>               //we are using the ESP32
 #include <Firebase_ESP_Client.h>
-#include <DHT.h>                // Install DHT library by adafruit 1.3.8
+#include <DHT.h>         // Install DHT library by adafruit 1.3.8
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
 #include <math.h>  // Include math library for log function
+//
+// Timer variables
+unsigned long lastTime = 0;  
+unsigned long lastTimeAcc = 0;
+unsigned long accelerometerDelay = 200;
 
+// Create a sensor object
+Adafruit_MPU6050 mpu;
+
+sensors_event_t a, g, temp;
+float accX, accY, accZ;
+float temperature;
+
+// Init MPU6050
+void initMPU(){
+  if (!mpu.begin()) {
+    Serial.println("Failed to find MPU6050 chip");
+    while (1) {
+      delay(10);
+    }
+  }
+  Serial.println("MPU6050 Found!");
+}
+
+//
 #define DHT_SENSOR_PIN 15
 #define DHT_SENSOR_TYPE DHT22
 //To provide the ESP32 / ESP8266 with the connection and the sensor type
@@ -60,6 +86,8 @@ void setup(){
   Serial.println(WiFi.localIP());
   Serial.println();
 
+  initMPU();
+
   /* Assign the api key (required) */
   config.api_key = API_KEY;
 
@@ -91,6 +119,17 @@ void setup(){
 }
 
 void loop(){
+  mpu.getEvent(&a, &g, &temp);
+  accX = a.acceleration.x;
+  accY = a.acceleration.y;
+  accZ = a.acceleration.z;
+  Serial.println("Acc on x axes: ");
+  Serial.println(accX);
+  Serial.println("Acc on y axes: ");
+  Serial.println(accY);
+  Serial.println("Acc on z axes: ");
+  Serial.println(accZ);
+  
   float temperature = dht_sensor.readTemperature();
   float humidity = dht_sensor.readHumidity();
   digitalWrite(Buzzer, HIGH);
