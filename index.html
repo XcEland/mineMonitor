@@ -14,20 +14,30 @@
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
+        max-height: 100vh;
       }
       .data-container {
         display: flex;
         justify-content: space-between;
-        width: 50%;
-        margin: 50px auto;
+        width: 90%;
+        margin: 30px auto;
         padding: 20px;
         background-color: #fff;
         box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
         border-radius: 10px;
       }
 
+      .row{
+        display: flex;
+        justify-content: space-between;
+        margin: 0 auto;
+        padding: 0px 20px;
+      }
+
       .data-item {
         text-align: center;
+        padding: 0px 20px ;
+        min-width: 100px;
       }
 
       .data-item h2 {
@@ -44,7 +54,7 @@
 
       .data-head {
         margin: auto;
-        width: 50%;
+        width: 80%;
         text-align: center;
         font-size: 45px;
         font-weight: bold;
@@ -54,20 +64,57 @@
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
         border-radius: 20px;
       }
+
+      /* On screens that are 600px or less, set the background color to olive */
+      @media screen and (max-width: 768px) {
+        .data-container {
+          flex-direction: column;
+          margin: 0 auto;
+          padding: 10px 20px;
+        }
+        .data-item{
+          width: 160px;
+          
+        }
+        .row{
+          border: 1px solid #6eb7ff;
+          border-radius: 6px;
+          margin-bottom: 5px;
+        }
+        .data-head {
+          font-size: 28px;
+        }
+        .data-item p{
+          margin: 30px auto;
+        }
+      }
     </style>
   </head>
   <body>
     <div class="data-head">Monitor Realtime Readings</div>
 
     <div class="data-container">
-      <div class="data-item">
-        <h2>Temperature</h2>
-        <p class="value" id="temperature">22 &#8451;</p>
+      <div class="row">
+        <div class="data-item">
+          <h2>Temperature</h2>
+          <p class="value" id="temperature">22 &#8451;</p>
+        </div>
+        <div class="data-item">
+          <h2>Humidity</h2>
+          <p class="value" id="humidity">10%</p>
+        </div>
       </div>
-      <div class="data-item">
-        <h2>Humidity</h2>
-        <p class="value" id="humidity">10%</p>
+      <div class="row">
+        <div class="data-item">
+          <h2>Air</h2>
+          <p class="value" id="air_quality">80</p>
+        </div>
+        <div class="data-item">
+          <h2>Depth</h2>
+          <p class="value" id="depth">00m</p>
+        </div>
       </div>
+      
     </div>
 
     <!-- the scripts for products you want to access must be added-->
@@ -118,6 +165,11 @@
       dataRef2.on("value", function (getdata2) {
         var temp = getdata2.val();
         document.getElementById("temperature").innerHTML = temp + "&#8451;";
+      });
+
+      dataRef3.on("value", function (getdata1) {
+        var air = getdata3.val();
+        document.getElementById("air_quality").innerHTML = air + "m";
       });
     </script>
   </body>
