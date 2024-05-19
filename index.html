@@ -155,7 +155,7 @@
       </div>
       <div class="row">
         <div class="data-item">
-          <h2>Air</h2>
+          <h2>Gas</h2>
           <p class="value" id="air_quality">80</p>
         </div>
         <div class="data-item">
@@ -217,7 +217,8 @@
       });
 
       dataRef3.on("value", function (getdata1) {
-        var air = getdata3.val();
+        var air = getdata1.val();
+        console.log(air);
         document.getElementById("air_quality").innerHTML = air + "m";
       });
     </script>
