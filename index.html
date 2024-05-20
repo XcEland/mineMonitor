@@ -213,7 +213,7 @@
       dataRef1.on("value", function (getdata1) {
         var humi = getdata1.val();
         document.getElementById("humidity").innerHTML = humi + "%";
-        updateBackgroundColor('humidity', humi, {low: 40, high: 55});
+        updateBackgroundColor('humidity', humi, {low: 35, high: 55});
       });
 
       dataRef2.on("value", function (getdata2) {
