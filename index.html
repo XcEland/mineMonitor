@@ -160,7 +160,7 @@
         </div>
         <div class="data-item">
           <h2>Depth</h2>
-          <p class="value" id="depth">00m</p>
+          <p class="value" id="z_distance">00cm</p>
         </div>
       </div>
       
@@ -205,6 +205,10 @@
       var dataRef2 = database.ref("DHT_22/Temperature");
       var dataRef3 = database.ref("MQ_Sensor/AirQuality");
 
+      var dataRef4 = database.ref("Displacement/displacementX");
+      var dataRef5 = database.ref("Displacement/displacementY");
+      var dataRef6 = database.ref("Displacement/displacementZ");
+
       //fetch the data
       dataRef1.on("value", function (getdata1) {
         var humi = getdata1.val();
@@ -218,8 +222,22 @@
 
       dataRef3.on("value", function (getdata1) {
         var air = getdata1.val();
-        console.log(air);
         document.getElementById("air_quality").innerHTML = air + "m";
+      });
+
+      // dataRef4.on("value", function (getdata1) {
+      //   var x_distance = getdata1.val();
+      //   document.getElementById("x_distance").innerHTML = x_distance  + "m";
+      // });
+
+      // dataRef5.on("value", function (getdata2) {
+      //   var y_distance = getdata2.val();
+      //   document.getElementById("y_distance").innerHTML = y_distance  + "m";
+      // });
+
+      dataRef6.on("value", function (getdata3) {
+        var z_distance = getdata3.val();
+        document.getElementById("z_distance").innerHTML = z_distance  + "cm";
       });
     </script>
   </body>

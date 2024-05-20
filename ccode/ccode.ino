@@ -6,10 +6,13 @@
 #include <Adafruit_Sensor.h>
 #include <math.h>  // Include math library for log function
 //
+#define LED_RED 5       // Pin where the LED is connected
+#define LED_BLUE 4       // Pin where the LED is connected
 // Timer variables
-unsigned long lastTime = 0;  
-unsigned long lastTimeAcc = 0;
-unsigned long accelerometerDelay = 200;
+unsigned long lastTime = 0;
+float deltaTime;
+float velocityX = 0, velocityY = 0, velocityZ = 0;
+float displacementX = 0, displacementY = 0, displacementZ = 0;
 
 // Create a sensor object
 Adafruit_MPU6050 mpu;
@@ -18,18 +21,6 @@ sensors_event_t a, g, temp;
 float accX, accY, accZ;
 float temperature;
 
-// Init MPU6050
-void initMPU(){
-  if (!mpu.begin()) {
-    Serial.println("Failed to find MPU6050 chip");
-    while (1) {
-      delay(10);
-    }
-  }
-  Serial.println("MPU6050 Found!");
-}
-
-//
 #define DHT_SENSOR_PIN 15
 #define DHT_SENSOR_TYPE DHT22
 //To provide the ESP32 / ESP8266 with the connection and the sensor type
@@ -74,6 +65,16 @@ void setup(){
   Serial.begin(9600);
   delay(1000);
   //
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_BLUE, OUTPUT);
+
+  digitalWrite(LED_BLUE, LOW);
+  digitalWrite(LED_RED, LOW);
+  mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
+  mpu.setGyroRange(MPU6050_RANGE_500_DEG);
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+  delay(100);
+
   WiFi.mode(WIFI_STA); //Optional
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi");
@@ -86,7 +87,6 @@ void setup(){
   Serial.println(WiFi.localIP());
   Serial.println();
 
-  initMPU();
 
   /* Assign the api key (required) */
   config.api_key = API_KEY;
@@ -113,50 +113,77 @@ void setup(){
   //
 
   analogReadResolution(10); // Set the ADC resolution to 10 bits
-  // pinMode(15, INPUT); // Thermistor is connected to GPIO 15
   pinMode(Buzzer, OUTPUT); // Set Buzzer pin as output
   pinMode(smokeA0, INPUT);
+  lastTime = millis();
 }
 
 void loop(){
   mpu.getEvent(&a, &g, &temp);
+  unsigned long currentTime = millis();
+  deltaTime = (currentTime - lastTime) / 1000.0; // deltaTime in seconds
+  lastTime = currentTime;
+
   accX = a.acceleration.x;
   accY = a.acceleration.y;
   accZ = a.acceleration.z;
-  Serial.println("Acc on x axes: ");
-  Serial.println(accX);
-  Serial.println("Acc on y axes: ");
-  Serial.println(accY);
-  Serial.println("Acc on z axes: ");
-  Serial.println(accZ);
+  accX += 104.2;
+  accY += 77.2;
+
+  Serial.print("Acc on x axes: ");
+  Serial.print(accX);
+  Serial.print("Acc on y axes: ");
+  Serial.print(accY);
+  Serial.print("Acc on z axes: ");
+  Serial.print(accZ);
+  Serial.println(" m/s^2");
+
+  // Convert raw accelerometer data to acceleration in m/s^2
+  // Assuming a scale factor for the accelerometer: 16384 LSB/g (for +/- 2g range)
+  float ax = accX / 16384.0 * 9.81; // Convert to m/s^2
+  float ay = accY / 16384.0 * 9.81; // Convert to m/s^2
+  float az = accZ / 16384.0 * 9.81; // Convert to m/s^2
+
+  // Integrate acceleration to get velocity
+  velocityX += ax * deltaTime;
+  velocityY += ay * deltaTime;
+  velocityZ += az * deltaTime;
+
+  // Integrate velocity to get displacement
+  displacementX += velocityX * deltaTime;
+  displacementY += velocityY * deltaTime;
+  displacementZ += velocityZ * deltaTime;
   
+  Serial.println("displacement X: ");
+  Serial.print(displacementX);
+  Serial.print(", Y: ");
+  Serial.print(displacementY);
+  Serial.print(", Z: ");
+  Serial.print(displacementZ);
+  Serial.println(" m/s^2");
+  //
+
   float temperature = dht_sensor.readTemperature();
   float humidity = dht_sensor.readHumidity();
   digitalWrite(Buzzer, HIGH);
 
   data = analogRead(smokeA0);
   int air_quality = data * sensitivity / 1023;
-  // Serial.println("Air quality: ");
-  // Serial.println(air_quality);
-
-  // Serial.print("Temperature : ");
-  // Serial.println(temperature);
-
-  // Serial.print("Humidity : ");
-  // Serial.println(humidity); 
-
-  // int analogValue = analogRead(15); // Read analog value from pin 15
-  // Serial.print(analogValue);
-  // float celsius = 1 / (log(1 / (1023.0 / analogValue - 1)) / BETA + 1.0 / 298.15) - 288.15;
-  // Serial.print("Temperature: ");
-  // Serial.print(celsius);
-  // Serial.println(" ℃");
-
-  // if(celsius >= 16){
-  //   digitalWrite(Buzzer, HIGH); // Turn buzzer on
-  // } else {
-  //   digitalWrite(Buzzer, LOW); // Turn buzzer off
-  // }
+  //
+  if (temperature > 20 && air_quality < 100 && temperature < 30) {
+    digitalWrite(LED_BLUE, HIGH);
+    digitalWrite(LED_RED, LOW);
+    digitalWrite(Buzzer, HIGH);
+  } else if (temperature < 20 || air_quality > 100) {
+    digitalWrite(LED_BLUE, LOW);
+    digitalWrite(LED_RED, HIGH);
+    digitalWrite(Buzzer, HIGH);
+  } else {
+    digitalWrite(LED_RED, HIGH);
+    digitalWrite(Buzzer, LOW);
+  }
+  //
+  
   if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 1000 || sendDataPrevMillis == 0)){
     //since we want the data to be updated every second
     sendDataPrevMillis = millis();
@@ -187,9 +214,27 @@ void loop(){
       Serial.print("Air quality: ");
       Serial.print(air_quality);
     }
+    
     else {
       Serial.println("Failed to Read from the Sensor");
       Serial.println("REASON: " + fbdo.errorReason());
+    }
+
+    // Enter Air Quality in to the Displacement Table
+    if (Firebase.RTDB.setInt(&fbdo, "Displacement/displacementX", displacementX)){
+      // This command will be executed even if you dont serial print but we will make sure its working
+      Serial.print("displacementX: ");
+      Serial.print(displacementX);
+    }
+    if (Firebase.RTDB.setInt(&fbdo, "Displacement/displacementY", displacementY)){
+      // This command will be executed even if you dont serial print but we will make sure its working
+      Serial.print("displacementY: ");
+      Serial.print(displacementY);
+    }
+    if (Firebase.RTDB.setInt(&fbdo, "Displacement/displacementZ", displacementZ)){
+      // This command will be executed even if you dont serial print but we will make sure its working
+      Serial.print("displacementZ: ");
+      Serial.print(displacementZ);
     }
   }
   delay(1000); // Delay for 1 second before the next reading
