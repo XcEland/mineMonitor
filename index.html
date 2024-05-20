@@ -144,22 +144,22 @@
 
     <div class="data-container">
       <div class="row">
-        <div class="data-item">
+        <div class="data-item" id='tempDiv'>
           <h2>Temperature</h2>
           <p class="value" id="temperature">22 &#8451;</p>
         </div>
-        <div class="data-item">
+        <div class="data-item" id="humidityDiv">
           <h2>Humidity</h2>
           <p class="value" id="humidity">10%</p>
         </div>
       </div>
       <div class="row">
-        <div class="data-item">
+        <div class="data-item" id="gasDiv">
           <h2>Gas</h2>
           <p class="value" id="air_quality">80</p>
         </div>
-        <div class="data-item">
-          <h2>Depth</h2>
+        <div class="data-item" id='depthDiv'>
+          <h2>Displacement</h2>
           <p class="value" id="z_distance">00cm</p>
         </div>
       </div>
@@ -213,16 +213,19 @@
       dataRef1.on("value", function (getdata1) {
         var humi = getdata1.val();
         document.getElementById("humidity").innerHTML = humi + "%";
+        updateBackgroundColor('humidityDiv', humi, {low: 40, high: 55});
       });
 
       dataRef2.on("value", function (getdata2) {
         var temp = getdata2.val();
         document.getElementById("temperature").innerHTML = temp + "&#8451;";
+        updateBackgroundColor('tempDiv', temp, {low: 20, high: 30});
       });
 
       dataRef3.on("value", function (getdata1) {
         var air = getdata1.val();
         document.getElementById("air_quality").innerHTML = air + "m";
+        updateBackgroundColor('gasDiv', air, {high: 100});
       });
 
       // dataRef4.on("value", function (getdata1) {
@@ -238,7 +241,19 @@
       dataRef6.on("value", function (getdata3) {
         var z_distance = getdata3.val();
         document.getElementById("z_distance").innerHTML = z_distance  + "cm";
+        updateBackgroundColor('depthDiv', z_distance, {high: 50}); // Example threshold
       });
+
+      function updateBackgroundColor(elementId, value, thresholds) {
+      const element = document.getElementById(elementId);
+      if ('low' in thresholds && value < thresholds.low) {
+        element.style.backgroundColor = 'orange';
+      } else if ('high' in thresholds && value > thresholds.high) {
+        element.style.backgroundColor = 'red';
+      } else {
+        element.style.backgroundColor = 'white'; // Default background color
+      }
+    }
     </script>
   </body>
 </html>

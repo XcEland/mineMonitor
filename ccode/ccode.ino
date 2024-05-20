@@ -150,9 +150,14 @@ void loop(){
   velocityZ += az * deltaTime;
 
   // Integrate velocity to get displacement
-  displacementX += velocityX * deltaTime;
-  displacementY += velocityY * deltaTime;
-  displacementZ += velocityZ * deltaTime;
+  displacementX = velocityX * deltaTime;
+  displacementY = velocityY * deltaTime;
+  displacementZ = velocityZ * deltaTime;
+
+  // Round displacement to 1 decimal place
+  displacementX = round(displacementX * 10) / 10.0;
+  displacementY = round(displacementY * 10) / 10.0;
+  displacementZ = round(displacementZ * 10) / 10.0;
   
   Serial.println("displacement X: ");
   Serial.print(displacementX);
