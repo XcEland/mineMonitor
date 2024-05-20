@@ -213,19 +213,19 @@
       dataRef1.on("value", function (getdata1) {
         var humi = getdata1.val();
         document.getElementById("humidity").innerHTML = humi + "%";
-        updateBackgroundColor('humidityDiv', humi, {low: 40, high: 55});
+        updateBackgroundColor('humidity', humi, {low: 40, high: 55});
       });
 
       dataRef2.on("value", function (getdata2) {
         var temp = getdata2.val();
         document.getElementById("temperature").innerHTML = temp + "&#8451;";
-        updateBackgroundColor('tempDiv', temp, {low: 20, high: 30});
+        updateBackgroundColor('temperature', temp, {low: 20, high: 30});
       });
 
       dataRef3.on("value", function (getdata1) {
         var air = getdata1.val();
-        document.getElementById("air_quality").innerHTML = air + "m";
-        updateBackgroundColor('gasDiv', air, {high: 100});
+        document.getElementById("air_quality").innerHTML = air ;
+        updateBackgroundColor('air_quality', air, {high: 100});
       });
 
       // dataRef4.on("value", function (getdata1) {
@@ -241,17 +241,17 @@
       dataRef6.on("value", function (getdata3) {
         var z_distance = getdata3.val();
         document.getElementById("z_distance").innerHTML = z_distance  + "cm";
-        updateBackgroundColor('depthDiv', z_distance, {high: 50}); // Example threshold
+        updateBackgroundColor('z_distance', z_distance, {high: 50}); // Example threshold
       });
 
       function updateBackgroundColor(elementId, value, thresholds) {
       const element = document.getElementById(elementId);
       if ('low' in thresholds && value < thresholds.low) {
-        element.style.backgroundColor = 'orange';
+        element.style.color = 'orange';
       } else if ('high' in thresholds && value > thresholds.high) {
-        element.style.backgroundColor = 'red';
+        element.style.color = 'red';
       } else {
-        element.style.backgroundColor = 'white'; // Default background color
+        element.style.color = '#6eb7ff'; // Default background color
       }
     }
     </script>
