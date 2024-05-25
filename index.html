@@ -34,14 +34,13 @@
       .row{
         display: flex;
         justify-content: space-between;
-        margin: 0 auto;
+        /* margin: 0 auto; */
         padding: 0px 20px;
       }
 
       .data-item {
         text-align: center;
         padding: 0px 20px ;
-        min-width: 100px;
       }
 
       .data-item h2 {
@@ -57,7 +56,7 @@
       }
 
       .data-head {
-        margin: auto;
+        margin: 0px auto;
         width: 80%;
         text-align: center;
         font-size: 45px;
@@ -77,7 +76,6 @@
       }
 
       .control-button {
-            /* margin-top: 20px; */
             display: flex;
             justify-content: center;
       }
@@ -104,8 +102,19 @@
             background-color: #f9f9f9;
             text-align: center;
             font-size: 16px;
+            font-weight: bold;
         }
-
+      /* On screens that are 768px or less */
+      @media screen and (max-width: 1010px) {
+        .data-container {
+          margin: 0 auto;
+        }
+  
+        .data-item p{
+          padding: 0px;
+          font-size: 36px;
+        }
+      }
       /* On screens that are 768px or less */
       @media screen and (max-width: 768px) {
         .data-container {
@@ -136,7 +145,7 @@
           width: 84%;
         }
         .data-item{
-          width: 50px;
+          min-width: 50px;
           padding: 0;
           
         }
@@ -165,15 +174,14 @@
       /* On screens that are 300px or less*/
       @media screen and (max-width: 300px) {
         .data-container{
-          width: 84%;
           justify-content: center;
         }
         .row{
-          margin: auto;
           align-content: center;
+          padding: 2px;
         }
         .data-item{
-          width: 40px;
+          min-width: 15px;
           padding: 0;
           
         }
@@ -182,7 +190,7 @@
         }
         .data-item p{
           font-size: 20px;
-          margin: 30px auto;
+          margin: 10px auto;
         }
         .data-item h2{
           font-size: 12px;
@@ -193,10 +201,13 @@
           padding: 6px 12px;
           flex: 1 1 100px; 
         }
+        .footer{
+          margin: 0 auto;
+        }
       
         .report {
                 font-size: 12px;
-            }
+        }
       }
     </style>
   </head>
@@ -311,7 +322,7 @@
 
       dataRef6.on("value", function (getdata3) {
         var z_distance = getdata3.val();
-        document.getElementById("z_distance").innerHTML = z_distance  + "cm";
+        document.getElementById("z_distance").innerHTML = z_distance.toFixed(2)  + "cm";
         updateBackgroundColor('z_distance', z_distance, {high: 50}); // Example threshold
       });
 
