@@ -16,7 +16,7 @@
         padding: 0;
         max-height: 100vh;
       }
-      .data-container {
+      .data-container, .footer {
         display: flex;
         justify-content: space-between;
         width: 90%;
@@ -25,6 +25,10 @@
         background-color: #fff;
         box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
         border-radius: 10px;
+      }
+      .footer{
+        display: flex;
+        flex-direction: column;
       }
 
       .row{
@@ -58,12 +62,49 @@
         text-align: center;
         font-size: 45px;
         font-weight: bold;
-        margin: 50px auto;
+        margin: 30px auto;
         padding: 20px;
         background-color: #fff;
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
         border-radius: 20px;
       }
+
+      .on {
+            background-color: orange;
+      }
+      .off {
+            background-color: blue;
+      }
+
+      .control-button {
+            /* margin-top: 20px; */
+            display: flex;
+            justify-content: center;
+      }
+      .control-button button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            flex: 1 1 150px;
+            transition: background-color 0.3s, transform 0.3s;
+      }
+      .control-button button:hover {
+            transform: scale(1.05);
+      }
+
+      .report {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            text-align: center;
+            font-size: 16px;
+        }
 
       /* On screens that are 768px or less */
       @media screen and (max-width: 768px) {
@@ -109,6 +150,16 @@
         .data-item h2{
           font-size: 18px;
         }
+
+        .control-button button {
+                font-size: 14px;
+                padding: 8px 16px;
+                flex: 1 1 120px;
+        }
+
+        .report {
+                font-size: 14px;
+        }
       }
 
       /* On screens that are 300px or less*/
@@ -136,6 +187,16 @@
         .data-item h2{
           font-size: 12px;
         }
+
+        .control-button button {
+          font-size: 12px;
+          padding: 6px 12px;
+          flex: 1 1 100px; 
+        }
+      
+        .report {
+                font-size: 12px;
+            }
       }
     </style>
   </head>
@@ -164,6 +225,16 @@
         </div>
       </div>
       
+    </div>
+    <div class="footer">
+      <div class="control-button">
+        <button id="toggleBuzzer" class="off">Buzzer Off</button>
+        <button id="toggleLED1" class="off">LED1 Off</button>
+        <button id="toggleLED2" class="off">LED2 Off</button>
+      </div>
+      <div class="report" id="report">
+        Condition of the mine will be displayed here.
+    </div>
     </div>
 
     <!-- the scripts for products you want to access must be added-->
@@ -253,7 +324,123 @@
       } else {
         element.style.color = '#6eb7ff'; // Default background color
       }
-    }
+      }
+
+      // Function to update the Firebase database
+      function toggleCommand(command, element) {
+            database.ref('Control/' + command).once('value').then(function(snapshot) {
+                var currentValue = snapshot.val();
+                var newValue = currentValue === 'ON' ? 'OFF' : 'ON';
+                database.ref('Control').update({
+                    [command]: newValue
+                });
+                updateButtonState(element, newValue);
+            });
+        }
+
+        // Function to update button state
+        function updateButtonState(button, state) {
+            if (state === 'ON') {
+                button.textContent = button.id.replace('toggle', '') + ' On';
+                button.className = 'on';
+            } else {
+                button.textContent = button.id.replace('toggle', '') + ' Off';
+                button.className = 'off';
+            }
+        }
+
+        // Event listeners for buttons
+        document.getElementById('toggleBuzzer').addEventListener('click', function() {
+            toggleCommand('BuzzerCommand', this);
+        });
+
+        document.getElementById('toggleLED1').addEventListener('click', function() {
+            toggleCommand('LED1Command', this);
+        });
+
+        document.getElementById('toggleLED2').addEventListener('click', function() {
+            toggleCommand('LED2Command', this);
+        });
+
+        // Initial state setup
+        function initializeButtonState(command, buttonId) {
+            database.ref('Control/' + command).once('value').then(function(snapshot) {
+                var currentValue = snapshot.val();
+                var button = document.getElementById(buttonId);
+                updateButtonState(button, currentValue);
+            });
+        }
+
+        initializeButtonState('BuzzerCommand', 'toggleBuzzer');
+        initializeButtonState('LED1Command', 'toggleLED1');
+        initializeButtonState('LED2Command', 'toggleLED2');
+
+
+        // Function to update the report based on sensor values
+        function updateReport(temperature, humidity, air_quality) {
+            var report = document.getElementById('report');
+            var conditions = [];
+
+            if (temperature > 20 && temperature < 30) {
+                conditions.push("Temperature is optimal");
+            } else if (temperature <= 20) {
+                conditions.push("Temperature is low");
+            } else {
+                conditions.push("Temperature is high");
+            }
+
+            if (humidity > 30 && humidity < 60) {
+                conditions.push("Humidity is optimal");
+            } else if (humidity <= 30) {
+                conditions.push("Humidity is low");
+            } else {
+                conditions.push("Humidity is high");
+            }
+
+            if (air_quality < 100) {
+                conditions.push("Air quality is good");
+            } else {
+                conditions.push("Air quality is poor");
+            }
+
+            report.textContent = conditions.join(", ");
+        }
+
+        // Function to get real-time sensor data
+        function getSensorData() {
+            database.ref('DHT_22/Temperature').on('value', function(snapshot) {
+                var temperature = snapshot.val();
+                document.getElementById('temperature').textContent = temperature + ' ℃';
+                updateSensorData('temperature', temperature);
+            });
+
+            database.ref('DHT_22/Humidity').on('value', function(snapshot) {
+                var humidity = snapshot.val();
+                document.getElementById('humidity').textContent = humidity + '%';
+                updateSensorData('humidity', humidity);
+            });
+
+            database.ref('MQ_Sensor/AirQuality').on('value', function(snapshot) {
+                var air_quality = snapshot.val();
+                document.getElementById('air_quality').textContent = air_quality;
+                updateSensorData('air_quality', air_quality);
+            });
+        }
+
+        var sensorData = {
+            temperature: null,
+            humidity: null,
+            air_quality: null
+        };
+
+        function updateSensorData(type, value) {
+            sensorData[type] = value;
+            if (sensorData.temperature !== null && sensorData.humidity !== null && sensorData.air_quality !== null) {
+                updateReport(sensorData.temperature, sensorData.humidity, sensorData.air_quality);
+            }
+        }
+
+        getSensorData();
     </script>
   </body>
 </html>
