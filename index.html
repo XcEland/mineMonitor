@@ -94,6 +94,16 @@
             transform: scale(1.05);
       }
 
+      #hat_state {
+      padding: 10px;
+      color: white; /* Ensures text color contrasts with background */
+      text-align: center;
+      font-weight: bold;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      transition: background-color 0.3s ease; /* Smooth transition effect */
+   }
+
       .report {
             margin-top: 20px;
             padding: 20px;
@@ -104,6 +114,11 @@
             font-size: 16px;
             font-weight: bold;
         }
+      
+        .bottom {
+          display: flex;
+          justify-content: space-between; /* Distribute items evenly along the main axis */
+}
       /* On screens that are 768px or less */
       @media screen and (max-width: 1010px) {
         .data-container {
@@ -243,9 +258,15 @@
         <button id="toggleLED1" class="off">LED1 Off</button>
         <button id="toggleLED2" class="off">LED2 Off</button>
       </div>
-      <div class="report" id="report">
-        Condition of the mine will be displayed here.
-    </div>
+      <!-- <div class="bottom"> -->
+        
+        <div class="report" id="report">
+          Condition of the mine will be displayed here.
+      </div>
+      <div id="hat_state" class="report">
+      </div>
+      <!-- </div> -->
+      
     </div>
 
     <!-- the scripts for products you want to access must be added-->
@@ -290,6 +311,7 @@
       var dataRef4 = database.ref("Displacement/displacementX");
       var dataRef5 = database.ref("Displacement/displacementY");
       var dataRef6 = database.ref("Displacement/displacementZ");
+      var dataRef7 = database.ref("IR_Sensor/State");
 
       //fetch the data
       dataRef1.on("value", function (getdata1) {
@@ -307,7 +329,7 @@
       dataRef3.on("value", function (getdata1) {
         var air = getdata1.val();
         document.getElementById("air_quality").innerHTML = air ;
-        updateBackgroundColor('air_quality', air, {high: 100});
+        updateBackgroundColor('air_quality', air, {high: 115});
       });
 
       // dataRef4.on("value", function (getdata1) {
@@ -323,7 +345,19 @@
       dataRef6.on("value", function (getdata3) {
         var z_distance = getdata3.val();
         document.getElementById("z_distance").innerHTML = z_distance.toFixed(2)  + "cm";
-        updateBackgroundColor('z_distance', z_distance, {high: 50}); // Example threshold
+        updateBackgroundColor('z_distance', z_distance, {high: 200}); // Example threshold
+      });
+
+      dataRef7.on("value", function (getdata1) {
+        var ir_value = getdata1.val();
+        var hatStateElement = document.getElementById("hat_state");
+        if (ir_value === 1) {
+          hatStateElement.innerHTML = "Please wear hat";
+          hatStateElement.style.backgroundColor = "red";
+        } else if (ir_value === 0) {
+          hatStateElement.innerHTML = "Hat is worn";
+          hatStateElement.style.backgroundColor = "gold";
+        }
       });
 
       function updateBackgroundColor(elementId, value, thresholds) {
